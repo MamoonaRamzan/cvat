@@ -11,7 +11,7 @@
 
 ### COCO images used ()
 
-COCO images used: (not imported yet)
+COCO images used: 200 images from COCO val2017 (folder val2017_small; annotations from instances_val2017_small.json)
 
 ## Goal (floor first)
 
@@ -47,6 +47,7 @@ Honest stop is better than a rushed broken feature.
 ## Plan change log
 
 - start: Initial plan (assessment start)
+- after setup: Recorded COCO sample as 200 images; annotations import needed task labels registered first
 
 ## Decision record (assessment item 10) —
 
