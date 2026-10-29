@@ -7,23 +7,23 @@ Written before feature work. Tick only with evidence (number, path, screenshot n
 - [x] Sample data ready: task openable with labelled boxes  
   Evidence: task `coco-val2017-200`, 200 images, boxes visible after COCO import (verified in UI)
 
-- [ ] Django app `test` exists and is wired into the project  
-  Evidence: _(path + commit later)_
+- [x] Django app `test` exists and is wired into the project  
+  Evidence: `cvat/apps/test/`, commit 5325cc9
 
-- [ ] API returns per-class annotation counts for a task, read from the database  
-  Evidence: _(example JSON + how verified against known task later)_
+- [x] API returns per-class annotation counts for a task, read from the database  
+  Evidence: GET `/api/test/annotation-counts/1` returns JSON; person count 571 matches DB query
 
-- [ ] Web page calls that API  
-  Evidence: _(UI route / how to open later)_
+- [x] Web page calls that API  
+  Evidence: `/tasks/1/annotation-analytics` (commit after UI fix)
 
-- [ ] Counts shown as a graph  
-  Evidence: _(what chart library / screenshot note later)_
+- [x] Counts shown as a graph  
+  Evidence: bar chart “Top 20 classes by annotation count” verified in UI
 
 - [ ] Empty state handled (task with no annotations / no classes)  
   Evidence: _(how tested later)_
 
-- [ ] Failed request handled (API error shown cleanly)  
-  Evidence: _(how tested later)_
+- [x] Failed request handled (API error shown cleanly)  
+  Evidence: `/tasks/99999/annotation-analytics` shows Result error “Task not found” (UI verified)
 
 - [ ] MO-1 measured: 5 runs, median + spread recorded in Objectives.md  
   Evidence: _(link to Objectives results section later)_
