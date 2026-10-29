@@ -14,46 +14,48 @@ Written before feature work. Tick only with evidence (number, path, screenshot n
   Evidence: GET `/api/test/annotation-counts/1` returns JSON; person count 571 matches DB query
 
 - [x] Web page calls that API  
-  Evidence: `/tasks/1/annotation-analytics` (commit after UI fix)
+  Evidence: `/tasks/1/annotation-analytics` (commit c0e0b62)
 
 - [x] Counts shown as a graph  
   Evidence: bar chart “Top 20 classes by annotation count” verified in UI
 
 - [ ] Empty state handled (task with no annotations / no classes)  
-  Evidence: _(how tested later)_
+  Evidence: open `/tasks/2/annotation-analytics` — task `empty-no-annotations`, 0 shapes in DB (confirm UI shows Empty)
 
 - [x] Failed request handled (API error shown cleanly)  
   Evidence: `/tasks/99999/annotation-analytics` shows Result error “Task not found” (UI verified)
 
-- [ ] MO-1 measured: 5 runs, median + spread recorded in Objectives.md  
-  Evidence: _(link to Objectives results section later)_
+- [x] MO-1 measured: 5 runs, median + spread recorded in Objectives.md  
+  Evidence: Objectives.md MO-1 median 0.0152 s, target 500 ms met
 
-- [ ] Everything not finished is listed below (honest stop)  
+- [x] Everything not finished is listed below (honest stop)  
   Evidence: see "Not finished"
 
 - [ ] Loom ≤ 5 minutes recorded; answers K1–K4 without reading notes  
-  Evidence: _(Loom URL later)_
+  Evidence: _(Loom URL before submit)_
 
 ## Stretch (only if floor above is done)
 
-- [ ] Auth: unauthenticated request refused  
-  Evidence: _(status code later)_
+- [x] Auth: unauthenticated request refused  
+  Evidence: `curl http://localhost:8080/api/test/annotation-counts/1` → HTTP 401
 
 - [ ] Auth: user without task access refused  
-  Evidence: _(status code later)_
+  Evidence: not tested (time); endpoint uses TaskPermission VIEW like other task APIs
 
 - [ ] Extra filter or grouping beyond plain count  
-  Evidence: _(what + why later)_
+  Evidence: skipped (time)
 
 - [ ] Live updates over WebSocket  
-  Evidence: _(how demonstrated later)_
+  Evidence: skipped (time)
 
 - [ ] Recovers when WebSocket drops and returns  
-  Evidence: _(how demonstrated later)_
+  Evidence: skipped (time)
 
 ## Not finished
 
-_(Fill at the end. List assessment items you did not reach and why.)_
+- Assessment items 7–10: extra filter/grouping, WebSocket live updates, reconnect, decision record in Plan — skipped to finish floor + MO-1 + submission in time.
+- Item 5 (partial): did not demo a second user denied task access (401 without login verified).
+- Loom recording and GitHub PR — must complete before deadline.
 
 ## Done means
 

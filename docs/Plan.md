@@ -48,6 +48,7 @@ Honest stop is better than a rushed broken feature.
 
 - start: Initial plan (assessment start)
 - after setup: Recorded COCO sample as 200 images; annotations import needed task labels registered first
+- time limit: Floor + MO-1 done; skipped WebSocket, extra filter, full auth demo for second user
 
 ## Decision record (assessment item 10) —
 

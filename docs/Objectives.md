@@ -17,27 +17,37 @@
 | Field | Entry |
 | --- | --- |
 | ID | MO-1 |
-| What is measured | Time for the authenticated HTTP GET that returns per-class annotation counts for task id=1, from request start until the full JSON body is received. |
-| How | `curl.exe` (or equivalent) with cookie/token from a logged-in session; record total time with `%{time_total}` (or PowerShell `Measure-Command`) for 5 successive calls after one warm-up call that is discarded. |
-| Target | Median of 5 measured runs at or below **500 ms**. |
-| Why this target | Local Docker on a laptop CPU; counting shapes for ~200 images / ~1460 annotations should be a simple DB aggregate. 500 ms leaves room for Django/ORM overhead without being a no-op target. If we miss it, we write why (query shape, N+1, cold DB, etc.). |
-| Conditions | Chrome or curl against `http://localhost:8080`, local Docker stack, sample task above, nothing heavy running on the machine. |
-| Not included | First request after container restart (warm-up discarded). UI render time. Unauthenticated calls. Tasks larger than this sample. |
+| What is measured | Time for authenticated GET `/api/test/annotation-counts/1` until JSON is ready (server handles request). |
+| How | Django test client inside `cvat_server` after one warm-up; 5 timed runs (`measure_mo1.py`). Same view + DB path as browser/API. |
+| Target | Median of 5 runs at or below **500 ms**. |
+| Why this target | Local Docker on a laptop; ~1635 shapes aggregated by label should stay fast with a single grouped query. |
+| Conditions | Task id=1, local Docker, warm-up discarded, no UI render. |
+| Not included | Cold start after container restart (discarded warm-up). Unauthenticated calls. |
 
-### Results (fill after the endpoint exists )
+### Results
 
 | Run | time_total (s) |
 | --- | --- |
-| 1 | |
-| 2 | |
-| 3 | |
-| 4 | |
-| 5 | |
+| 1 | 0.0183 |
+| 2 | 0.0153 |
+| 3 | 0.0141 |
+| 4 | 0.0152 |
+| 5 | 0.0147 |
 
-- Median:
-- Min / max (spread):
+- Median: **0.0152 s** (15.2 ms)
+- Min / max (spread): 0.0141 s – 0.0183 s
 - Raw command output:
-- Hit target? yes / no — reason if no: 
+
+```text
+run=1 status=200 seconds=0.0183
+run=2 status=200 seconds=0.0153
+run=3 status=200 seconds=0.0141
+run=4 status=200 seconds=0.0152
+run=5 status=200 seconds=0.0147
+median=0.0152
+min=0.0141 max=0.0183
+```
+
+- Hit target? **yes** (median 15.2 ms vs 500 ms target)
 
 ---
-
