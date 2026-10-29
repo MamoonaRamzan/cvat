@@ -4,12 +4,17 @@
 
 import './styles.scss';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {
+    useCallback, useEffect, useMemo, useState,
+} from 'react';
 import { useParams } from 'react-router';
 import { Row, Col } from 'antd/lib/grid';
 import Title from 'antd/lib/typography/Title';
+import Text from 'antd/lib/typography/Text';
 import Result from 'antd/lib/result';
 import Empty from 'antd/lib/empty';
+import Alert from 'antd/lib/alert';
+import InputNumber from 'antd/lib/input-number';
 import {
     BarElement,
     CategoryScale,
@@ -34,6 +39,7 @@ interface CountRow {
 
 interface CountsResponse {
     task_id: number;
+    min_count?: number;
     counts: CountRow[];
 }
 
@@ -44,10 +50,26 @@ type PageState =
     | { status: 'ready'; counts: CountRow[] };
 
 const core = getCore();
+const DEFAULT_MIN_COUNT = 10;
+
+function wsUrl(taskId: string, minCount: number): string {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}/api/test/ws/annotation-counts/${taskId}?min_count=${minCount}`;
+}
 
 function AnnotationAnalyticsPage(): JSX.Element {
     const { tid } = useParams<{ tid: string }>();
+    const [minCount, setMinCount] = useState(DEFAULT_MIN_COUNT);
     const [state, setState] = useState<PageState>({ status: 'loading' });
+    const [liveConnected, setLiveConnected] = useState(false);
+
+    const applyCounts = useCallback((counts: CountRow[] | undefined) => {
+        if (!counts?.length) {
+            setState({ status: 'empty' });
+            return;
+        }
+        setState({ status: 'ready', counts });
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -56,7 +78,7 @@ function AnnotationAnalyticsPage(): JSX.Element {
             setState({ status: 'loading' });
             try {
                 const { data } = await core.server.request(
-                    `/api/test/annotation-counts/${tid}`,
+                    `/api/test/annotation-counts/${tid}?min_count=${minCount}`,
                     { method: 'GET' },
                 ) as { data: CountsResponse };
 
@@ -64,12 +86,7 @@ function AnnotationAnalyticsPage(): JSX.Element {
                     return;
                 }
 
-                if (!data.counts?.length) {
-                    setState({ status: 'empty' });
-                    return;
-                }
-
-                setState({ status: 'ready', counts: data.counts });
+                applyCounts(data.counts);
             } catch (error: unknown) {
                 if (cancelled) {
                     return;
@@ -85,7 +102,56 @@ function AnnotationAnalyticsPage(): JSX.Element {
         return () => {
             cancelled = true;
         };
-    }, [tid]);
+    }, [tid, minCount, applyCounts]);
+
+    useEffect(() => {
+        if (!tid) {
+            return undefined;
+        }
+
+        let ws: WebSocket | null = null;
+        let reconnectTimer: number | null = null;
+        let cancelled = false;
+
+        function connect(): void {
+            ws = new WebSocket(wsUrl(tid, minCount));
+            ws.onopen = () => {
+                if (!cancelled) {
+                    setLiveConnected(true);
+                }
+            };
+            ws.onmessage = (event) => {
+                if (cancelled) {
+                    return;
+                }
+                try {
+                    const payload = JSON.parse(event.data) as CountsResponse;
+                    applyCounts(payload.counts);
+                } catch {
+                    // ignore malformed frames
+                }
+            };
+            ws.onclose = () => {
+                setLiveConnected(false);
+                if (!cancelled) {
+                    reconnectTimer = window.setTimeout(connect, 2000);
+                }
+            };
+            ws.onerror = () => {
+                ws?.close();
+            };
+        }
+
+        connect();
+
+        return () => {
+            cancelled = true;
+            if (reconnectTimer !== null) {
+                window.clearTimeout(reconnectTimer);
+            }
+            ws?.close();
+        };
+    }, [tid, minCount, applyCounts]);
 
     const chartData = useMemo(() => {
         if (state.status !== 'ready') {
@@ -118,7 +184,7 @@ function AnnotationAnalyticsPage(): JSX.Element {
         );
     } else if (state.status === 'empty') {
         body = (
-            <Empty description='No annotations found for this task.' />
+            <Empty description='No annotations found for this task at the current filter.' />
         );
     } else {
         body = (
@@ -131,7 +197,7 @@ function AnnotationAnalyticsPage(): JSX.Element {
                             legend: { display: false },
                             title: {
                                 display: true,
-                                text: 'Top 20 classes by annotation count',
+                                text: `Classes with at least ${minCount} annotations (top 20 shown)`,
                             },
                         },
                     }}
@@ -150,6 +216,26 @@ function AnnotationAnalyticsPage(): JSX.Element {
                         {tid}
                         )
                     </Title>
+                    <Row align='middle' gutter={16} className='cvat-annotation-analytics-controls'>
+                        <Col>
+                            <Text>Minimum count per class:</Text>
+                        </Col>
+                        <Col>
+                            <InputNumber
+                                min={0}
+                                value={minCount}
+                                onChange={(value) => setMinCount(typeof value === 'number' ? value : 0)}
+                            />
+                        </Col>
+                    </Row>
+                    {!liveConnected && state.status === 'ready' && (
+                        <Alert
+                            type='warning'
+                            showIcon
+                            message='Live connection paused — retrying every 2 seconds'
+                            className='cvat-annotation-analytics-live-alert'
+                        />
+                    )}
                     {body}
                 </Col>
             </Row>

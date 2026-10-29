@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: MIT
 
-from django.db.models import Count
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
-from cvat.apps.engine.models import LabeledShape, Task
+from cvat.apps.engine.models import Task
 
 from .permissions import AnnotationAnalyticsPermission
+from .services import annotation_counts_for_task
 
 
 @extend_schema(tags=["test"])
@@ -64,16 +64,18 @@ class AnnotationCountsViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         task = self.get_object()
 
-        rows = (
-            LabeledShape.objects.filter(job__segment__task_id=task.id)
-            .values("label__name")
-            .annotate(count=Count("id"))
-            .order_by("-count", "label__name")
-        )
+        try:
+            min_count = max(0, int(request.query_params.get("min_count", 0)))
+        except (TypeError, ValueError):
+            min_count = 0
 
-        counts = [{"label": row["label__name"], "count": row["count"]} for row in rows]
+        counts = annotation_counts_for_task(task.id, min_count=min_count)
 
         return Response(
-            {"task_id": task.id, "counts": counts},
+            {
+                "task_id": task.id,
+                "min_count": min_count,
+                "counts": counts,
+            },
             status=status.HTTP_200_OK,
         )

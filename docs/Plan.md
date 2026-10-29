@@ -49,6 +49,12 @@ Honest stop is better than a rushed broken feature.
 - start: Initial plan (assessment start)
 - after setup: Recorded COCO sample as 200 images; annotations import needed task labels registered first
 - time limit: Floor + MO-1 done; skipped WebSocket, extra filter, full auth demo for second user
+- stretch completed: min_count filter, WebSocket live counts, reconnect UI, task access 403 demo
 
-## Decision record (assessment item 10) —
+## Decision record (assessment item 10)
 
+**Approach taken:** Django ORM aggregate on `LabeledShape` in app `test`, REST + WebSocket on the same counts service; UI uses Chart.js with `min_count` filter and WebSocket reconnect.
+
+**Approach rejected:** Raw SQL or reading exported COCO JSON — faster to prototype but bypasses CVAT auth/DB truth and duplicates import data.
+
+**Cost of rejecting it:** ORM query is easier to permission-check and keep in sync with live annotations, at the cost of some query overhead (still well under MO-1 target).

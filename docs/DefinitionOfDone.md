@@ -39,23 +39,22 @@ Written before feature work. Tick only with evidence (number, path, screenshot n
 - [x] Auth: unauthenticated request refused  
   Evidence: `curl http://localhost:8080/api/test/annotation-counts/1` → HTTP 401
 
-- [ ] Auth: user without task access refused  
-  Evidence: not tested (time); endpoint uses TaskPermission VIEW like other task APIs
+- [x] Auth: user without task access refused  
+  Evidence: user `assessment_limited` → GET `/api/test/annotation-counts/1` → HTTP 403 (`verify_task_access.py`)
 
-- [ ] Extra filter or grouping beyond plain count  
-  Evidence: skipped (time)
+- [x] Extra filter or grouping beyond plain count  
+  Evidence: `min_count` query param + UI InputNumber; hides rare classes so the chart focuses on frequent labels
 
-- [ ] Live updates over WebSocket  
-  Evidence: skipped (time)
+- [x] Live updates over WebSocket  
+  Evidence: `ws://…/api/test/ws/annotation-counts/{task_id}` pushes updated counts (~1s) while annotating
 
-- [ ] Recovers when WebSocket drops and returns  
-  Evidence: skipped (time)
+- [x] Recovers when WebSocket drops and returns  
+  Evidence: UI reconnects every 2s; yellow Alert when disconnected (`annotation-analytics-page.tsx`)
 
 ## Not finished
 
-- Assessment items 7–10: extra filter/grouping, WebSocket live updates, reconnect, decision record in Plan — skipped to finish floor + MO-1 + submission in time.
-- Item 5 (partial): did not demo a second user denied task access (401 without login verified).
-- Loom recording and GitHub PR — must complete before deadline.
+- Loom recording and GitHub PR — complete before deadline.
+- Decision record expanded in Plan (see Plan.md).
 
 ## Done means
 

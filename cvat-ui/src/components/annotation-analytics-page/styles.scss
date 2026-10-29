@@ -1,6 +1,15 @@
 .cvat-annotation-analytics-page {
     padding: 24px 0;
 
+    .cvat-annotation-analytics-controls {
+        margin: 12px 0 8px;
+    }
+
+    .cvat-annotation-analytics-live-alert {
+        margin-bottom: 16px;
+        max-width: 960px;
+    }
+
     .cvat-annotation-analytics-chart {
         max-width: 960px;
         margin-top: 24px;
