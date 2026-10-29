@@ -19,8 +19,8 @@ Written before feature work. Tick only with evidence (number, path, screenshot n
 - [x] Counts shown as a graph  
   Evidence: bar chart “Top 20 classes by annotation count” verified in UI
 
-- [ ] Empty state handled (task with no annotations / no classes)  
-  Evidence: open `/tasks/2/annotation-analytics` — task `empty-no-annotations`, 0 shapes in DB (confirm UI shows Empty)
+- [x] Empty state handled (task with no annotations / no classes)  
+  Evidence: `/tasks/2/annotation-analytics` — task `empty-no-annotations`, 0 shapes; UI shows Empty message (verified)
 
 - [x] Failed request handled (API error shown cleanly)  
   Evidence: `/tasks/99999/annotation-analytics` shows Result error “Task not found” (UI verified)
